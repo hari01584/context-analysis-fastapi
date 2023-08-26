@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 import numpy as np
 import pandas as pd
 import pickle
@@ -14,6 +14,20 @@ from models import *
 from fastapi import FastAPI
 
 from Analyzers import *
+
+# INIT CONFIGURATION!
+TOPICS = [
+    "International Relations and Political Leadership",
+    "Military Actions and Attacks",
+    "Humanitarian Support and Needs",
+    "Global Economy and Sanctions",
+    "Political Figures and Commentary",
+    "Human Impact and Casualties",
+    "Media and News Coverage",
+    "Public Opinion and Urgency",
+    "Geopolitics and Weapons",
+    "Military Technology and Equipment"
+]
 
 # Create a FastAPI instance
 app = FastAPI()
@@ -56,14 +70,14 @@ async def login_user(user: User):
     return {"code": -1, "result": "password incorrect"}
 
 @app.post("/predict_topic", response_model=ModelResult)
-async def predict_topic(text: str):
-    history.append(History(topic_or_sentiment="topic", tweet=text))
+async def predict_topic(text: StringBody):
+    history.append(History(topic_or_sentiment="topic", tweet=text.text))
 
-    # Load the model
+    # # # Load the model
     mgp = pickle.load(open('chunk6_STTM.sav', 'rb'))
 
     topic_label, score = mgp.choose_best_label(text)
-    return {"label": topic_label, "score": score}
+    return {"label": TOPICS[topic_label], "score": score}
 #
 # # Define a route for sentiment analysis
 # @app.post("/predict_sentiment", response_model=ModelResult)
@@ -82,11 +96,13 @@ async def predict_topic(text: str):
 
 @app.get("/related_tweet", response_model=List[RelatedTweetItem])
 async def dummy_related_tweet(tweetTopic: str = None) -> Any:
-    print ("Dummy related tweets for", tweetTopic)
-    return [
-        {"name": "Abhinandan", "text": "A sample tweet"},
-        {"name": "Sahil", "text": "A aaaaaa tweet"},
-    ]
+    mycol = ""
+    if tweetTopic in TOPICS:
+        # Part of topics
+        mycol = 'topic'
+
+    stat.ddf[stat.ddf['topic'] == tweetTopic]
+
 
 @app.get("/tweet_time_count", response_model=GraphData)
 async def tweet_time_count(tweetTopic: str = None) -> Any:

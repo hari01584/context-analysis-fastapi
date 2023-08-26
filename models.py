@@ -3,6 +3,9 @@ from typing import Any, List, Union
 from fastapi import FastAPI
 from pydantic import BaseModel
 
+class StringBody(BaseModel):
+    text: str
+
 class User(BaseModel):
     email: str
     password: str
