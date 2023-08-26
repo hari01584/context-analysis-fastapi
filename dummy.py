@@ -97,11 +97,16 @@ async def predict_topic(text: StringBody):
 @app.get("/related_tweet", response_model=List[RelatedTweetItem])
 async def dummy_related_tweet(tweetTopic: str = None) -> Any:
     mycol = ""
-    if tweetTopic in TOPICS:
-        # Part of topics
-        mycol = 'topic'
+    # if tweetTopic in TOPICS:
+    #     # Part of topics
+    #     mycol = 'topic'
 
-    stat.ddf[stat.ddf['topic'] == tweetTopic]
+    # stat.ddf[stat.ddf['topic'] == tweetTopic]
+    return [
+        {"name": "Abhinandan", "text": "A sample tweet"},
+        {"name": "Sahil", "text": "A aaaaaa tweet"},
+    ]
+
 
 
 @app.get("/tweet_time_count", response_model=GraphData)
