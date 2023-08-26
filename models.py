@@ -24,6 +24,7 @@ class GraphData(BaseModel):
 class ModelResult(BaseModel):
     label: str
     score: float
+    message: str
 
 class OperationResult(BaseModel):
     code: int

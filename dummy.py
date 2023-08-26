@@ -12,8 +12,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import Any, List, Union
 from models import *
 from fastapi import FastAPI
+from transformers import pipeline
 
-from Analyzers import *
+# from Analyzers import *
 
 # INIT CONFIGURATION!
 TOPICS = [
@@ -48,8 +49,10 @@ database = {}
 history = []
 
 # Load datasets!
-stat = StatisticAnalyzer()
-stat.load()
+# stat = StatisticAnalyzer()
+# stat.load()
+analyzer = pipeline("sentiment-analysis", device=0, truncation="only_first")
+
 
 @app.get("/")
 async def root():
@@ -77,21 +80,21 @@ async def predict_topic(text: StringBody):
     mgp = pickle.load(open('chunk6_STTM.sav', 'rb'))
 
     topic_label, score = mgp.choose_best_label(text.text)
-    return {"label": TOPICS[topic_label], "score": score}
+    return {"label": TOPICS[topic_label], "score": score, "message": "Your predicted topic is " + TOPICS[topic_label]}
 #
-# # Define a route for sentiment analysis
-# @app.post("/predict_sentiment", response_model=ModelResult)
-# async def predict_sentiments(text: str):
-#     history.append(History(topic_or_sentiment="sentiment", tweet=text))
-#
-#     # Analyze the sentiment of the text
-#     result = analyzer(text)
-#
-#     # Extract the sentiment label and score from the result
-#     sentiment_label = result[0]['label']
-#     sentiment_score = result[0]['score']
-#
-#     return {"label": sentiment_label, "score": sentiment_score}
+# Define a route for sentiment analysis
+@app.post("/predict_sentiment", response_model=ModelResult)
+async def predict_sentiments(text: StringBody):
+    history.append(History(topic_or_sentiment="sentiment", tweet=text.text))
+
+    # Analyze the sentiment of the text
+    result = analyzer(text.text)
+
+    # Extract the sentiment label and score from the result
+    sentiment_label = result[0]['label']
+    sentiment_score = result[0]['score']
+
+    return {"label": sentiment_label, "score": sentiment_score, "message": "Your predicted sentiment is " + sentiment_label}
 #
 
 @app.get("/related_tweet", response_model=List[RelatedTweetItem])
