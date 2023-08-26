@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-from transformers import pipeline
 import numpy as np
 import pandas as pd
 import pickle
@@ -13,7 +12,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import Any, List, Union
 from models import *
 from fastapi import FastAPI
-from transformers import pipeline
 
 from Analyzers import *
 
@@ -32,7 +30,6 @@ app.add_middleware(
 )
 
 # Create a sentiment analysis pipeline
-analyzer = pipeline("sentiment-analysis", device=0, truncation="only_first")
 database = {}
 history = []
 
@@ -67,21 +64,21 @@ async def predict_topic(text: str):
 
     topic_label, score = mgp.choose_best_label(text)
     return {"label": topic_label, "score": score}
-
-# Define a route for sentiment analysis
-@app.post("/predict_sentiment", response_model=ModelResult)
-async def predict_sentiments(text: str):
-    history.append(History(topic_or_sentiment="sentiment", tweet=text))
-
-    # Analyze the sentiment of the text
-    result = analyzer(text)
-
-    # Extract the sentiment label and score from the result
-    sentiment_label = result[0]['label']
-    sentiment_score = result[0]['score']
-
-    return {"label": sentiment_label, "score": sentiment_score}
-
+#
+# # Define a route for sentiment analysis
+# @app.post("/predict_sentiment", response_model=ModelResult)
+# async def predict_sentiments(text: str):
+#     history.append(History(topic_or_sentiment="sentiment", tweet=text))
+#
+#     # Analyze the sentiment of the text
+#     result = analyzer(text)
+#
+#     # Extract the sentiment label and score from the result
+#     sentiment_label = result[0]['label']
+#     sentiment_score = result[0]['score']
+#
+#     return {"label": sentiment_label, "score": sentiment_score}
+#
 
 @app.get("/related_tweet", response_model=List[RelatedTweetItem])
 async def dummy_related_tweet(tweetTopic: str = None) -> Any:
