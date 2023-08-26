@@ -26,3 +26,7 @@ class OperationResult(BaseModel):
     code: int
     result: Union[str, None] = None
     message: Union[str, None] = None
+
+class History(BaseModel):
+    topic_or_sentiment: str
+    tweet: str

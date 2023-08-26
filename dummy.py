@@ -8,18 +8,37 @@ import gsdmm.gsdmm
 from gsdmm.gsdmm import MovieGroupProcess
 from tqdm import tqdm
 from gensim.models import CoherenceModel
+from fastapi.middleware.cors import CORSMiddleware
 
 from typing import Any, List, Union
 from models import *
 from fastapi import FastAPI
 from transformers import pipeline
 
+from Analyzers import *
+
 # Create a FastAPI instance
 app = FastAPI()
+
+# Cors
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Create a sentiment analysis pipeline
 analyzer = pipeline("sentiment-analysis", device=0, truncation="only_first")
 database = {}
+history = []
+
+# Load datasets!
+stat = StatisticAnalyzer()
+stat.load()
 
 @app.get("/")
 async def root():
@@ -41,7 +60,7 @@ async def login_user(user: User):
 
 @app.post("/predict_topic", response_model=ModelResult)
 async def predict_topic(text: str):
-    # print(text)
+    history.append(History(topic_or_sentiment="topic", tweet=text))
 
     # Load the model
     mgp = pickle.load(open('chunk6_STTM.sav', 'rb'))
@@ -52,6 +71,8 @@ async def predict_topic(text: str):
 # Define a route for sentiment analysis
 @app.post("/predict_sentiment", response_model=ModelResult)
 async def predict_sentiments(text: str):
+    history.append(History(topic_or_sentiment="sentiment", tweet=text))
+
     # Analyze the sentiment of the text
     result = analyzer(text)
 
@@ -60,7 +81,6 @@ async def predict_sentiments(text: str):
     sentiment_score = result[0]['score']
 
     return {"label": sentiment_label, "score": sentiment_score}
-
 
 
 @app.get("/related_tweet", response_model=List[RelatedTweetItem])
@@ -98,3 +118,7 @@ async def graph2_word_fame(tweetTopic: str = None) -> Any:
         "labels": ["oil", "india", "prices", "ukraine", "high", "inflation"],
         "values": [2000, 8000, 15000, 5000, 2000, 15000]
     }
+
+@app.get("/get_history", response_model=List[History])
+async def get_history() -> Any:
+    return history
