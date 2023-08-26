@@ -76,7 +76,7 @@ async def predict_topic(text: StringBody):
     # # # Load the model
     mgp = pickle.load(open('chunk6_STTM.sav', 'rb'))
 
-    topic_label, score = mgp.choose_best_label(text)
+    topic_label, score = mgp.choose_best_label(text.text)
     return {"label": TOPICS[topic_label], "score": score}
 #
 # # Define a route for sentiment analysis
